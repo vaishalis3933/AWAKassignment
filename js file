@@ -1,0 +1,84 @@
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const rememberMe = document.getElementById('rememberMe').checked;
+    const errorMessage = document.getElementById('errorMessage');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Clear previous error messages
+    errorMessage.textContent = '';
+
+    // Validate email/username
+    if (!username) {
+        errorMessage.textContent = 'Username/Email is required!';
+        return;
+    } else if (!validateEmail(username)) {
+        errorMessage.textContent = 'Please enter a valid email address!';
+        return;
+    }
+
+    // Validate password
+    if (!password) {
+        errorMessage.textContent = 'Password is required!';
+        return;
+    } else if (password.length < 6) {
+        errorMessage.textContent = 'Password must be at least 6 characters long!';
+        return;
+    }
+
+    // Show loading spinner and disable submit button
+    loadingSpinner.style.display = 'block';
+    submitBtn.disabled = true;
+
+    // Preparing data to be sent to the API
+    const loginData = {
+        username: username,
+        password: password,
+        rememberMe: rememberMe
+    };
+
+    // Sending POST request to the login API
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingSpinner.style.display = 'none';
+        submitBtn.disabled = false;
+
+        if (data.id) {
+            alert('Login successful!');
+            // Redirect or perform action on successful login
+        } else {
+            errorMessage.textContent = 'Login failed. Please check your credentials!';
+        }
+    })
+    .catch(() => {
+        loadingSpinner.style.display = 'none';
+        submitBtn.disabled = false;
+        errorMessage.textContent = 'An error occurred. Please try again.';
+    });
+});
+
+// Function to validate email format
+function validateEmail(email) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+}
+
+// Show/Hide password functionality
+const togglePassword = document.getElementById('togglePassword');
+const passwordField = document.getElementById('password');
+
+togglePassword.addEventListener('click', function() {
+    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordField.setAttribute('type', type);
+
+    // Change the button text
+    this.textContent = type === 'password' ? 'Show' : 'Hide';
+});
